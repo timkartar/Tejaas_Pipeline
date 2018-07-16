@@ -59,14 +59,13 @@ cardio_dict = dict()
 shuf_cardio_dict = dict()
 
 l = open("chroms.txt").read().split("\n")
-chr_list = [int(i)-1 for i in l[:-1]]
+chr_list = [] #[int(i)-1 for i in l[:-1]]
+for i in l:
+    try:
+        chr_list.append(int(i)-1)
+    except:
+        pass
 print(chr_list)
-#for i in l:
-#    try:
-#        chr_list.append(int(i)-1)
-#    except:
-#        pass
-#print(chr_list)
 for i in chr_list:
     print(i)
     chrm = i + 1
