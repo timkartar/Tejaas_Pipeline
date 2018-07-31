@@ -4,9 +4,8 @@ source paths.sh
 
 beta=$2
 INPUTDIR="${CARDIO_INPUTDIR}"
-OUTDIRBASE="${CARDIO_OUTDIRBASE}${beta}"
+OUTDIRBASE="${CARDIO_OUTDIRBASE}/beta_${beta}"
 JOBSUBDIR="${OUTDIRBASE}/jobsub"
-#TEJAAS="${HOME}/tejaas_mkl/bin/tejaas"
 CWD=`pwd`
 
 MAX_NSNP=20000
@@ -21,10 +20,11 @@ while read j; do
 
     echo "Submitting jobs for Chromosome ${j}."
 
-    GTFILE="${INPUTDIR}/CG_${j}.imputed.gz" #GTEx_450Indiv_genot_imput_info04_maf01_HWEp1E6_dbSNP135IDs_donorIDs_dosage_chr${j}.gz"
-    GXFILE="${INPUTDIR}/Cardiogenics_Monocyte-Expr_covariates_lmcorrected_noPEER.txt"
-    DONORS="${INPUTDIR}/CG.sample"
-    GENINF="${INPUTDIR}/gencode.v19.annotation.gtf.gz"
+    GTFILE="${CARDIO_GTFILE/__CHROM__/$j}"
+    GXFILE="${CARDIO_GXFILE}"
+    DONORS="${CARDIO_DONORS}"
+    GENINF="${CARDIO_GENINF}"
+
     JOBPREFIX="chr${j}"
 
     ## do not change below

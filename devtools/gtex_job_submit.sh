@@ -6,9 +6,8 @@ master=$1
 beta=$2
 
 INPUTDIR="${GTEX_INPUTDIR}"
-OUTDIRBASE="${GTEX_OUTDIRBASE}${beta}"
+OUTDIRBASE="${GTEX_OUTDIRBASE}/beta_${beta}"
 JOBSUBDIR="${OUTDIRBASE}/jobsub"
-#TEJAAS="${HOME}/tejaas_mkl/bin/tejaas"
 CWD=`pwd`
 
 MAX_NSNP=20000
@@ -23,10 +22,10 @@ while read j; do
 
     echo "Submitting jobs for Chromosome ${j}."
 
-    GTFILE="${INPUTDIR}/GTEx_450Indiv_genot_imput_info04_maf01_HWEp1E6_dbSNP135IDs_donorIDs_dosage_chr${j}.gz"
-    GXFILE="${INPUTDIR}/Whole_Blood_Analysis.v6p.normalized.expression.txt"
-    DONORS="${INPUTDIR}/donor_ids.fam"
-    GENINF="${INPUTDIR}/gencode.v19.annotation.gtf.gz"
+    GTFILE="${GTEX_GTFILE/__CHROM__/$j}"
+    GXFILE="${GTEX_GXFILE}"
+    DONORS="${GTEX_DONORS}"
+    GENINF="${GTEX_GENINF}"
     JOBPREFIX="chr${j}"
 
     ## do not change below

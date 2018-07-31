@@ -21,7 +21,7 @@ RUN_PATH=_TEJAAS_
 SNPTHRES=_SNPCUT_
 GENTHRES=_GENCUT_
 GENEINFO=_GENINF_
-SBETA=0.0001
+SBETA=0.001
 #source activate py35
 mpirun -n 8 ${RUN_PATH} --oxf          ${GENOFILE} \
                         --fam          ${SAMPFILE} \
