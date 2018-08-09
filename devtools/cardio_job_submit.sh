@@ -24,7 +24,6 @@ while read j; do
     GXFILE="${CARDIO_GXFILE}"
     DONORS="${CARDIO_DONORS}"
     GENINF="${CARDIO_GENINF}"
-
     JOBPREFIX="chr${j}"
 
     ## do not change below
@@ -61,11 +60,22 @@ while read j; do
              s|_ST_END_|${INCSNP}|g;
              s|_TEJAAS_|${TEJAAS}|g;
              s|_SNPCUT_|${SNPCUT}|g;
-             s|_GENCUT_|${GENCUT}|g;" $1 > ${JOBSUBDIR}/${JOBNAME}.bsub
+             s|_GENCUT_|${GENCUT}|g;
+             s|_BETA_|${beta}|g;" $1 > ${JOBSUBDIR}/${JOBNAME}.bsub
 
         # Submit the job
         cd ${JOBSUBDIR}
-        bsub < ${JOBNAME}.bsub
+        # workaround, sometimes the file was submitted to the cluster but not written to disk yet
+        ok=0
+        while [ $ok -lt 1 ]; do
+            if [ -s ${JOBNAME}.bsub ]; then
+                bsub < ${JOBNAME}.bsub
+                ok=1
+            else
+                echo "File is empty, retrying.."
+                sleep 1;
+            fi
+        done
         cd ${CWD}
     done
 

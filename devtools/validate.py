@@ -6,11 +6,17 @@ from tqdm import tqdm
 import random
 import operator
 import mpmath
-import sys
-gtex_out_dir = "../gtex_results"
+import sys, os   
+
+# gtex_out_dir = os.environ.get("GTEX_OUTDIRBASE") #"../gtex_results"
+# cardio_out_dir = os.environ.get("CARDIO_OUTDIRBASE") #"../cardio_results"
+
+gtex_out_dir = os.environ.get("HOME")+"/pipeline/gtex_results"
+cardio_out_dir = os.environ.get("HOME")+"/pipeline/cardio_results"
+
 gtex_beta = sys.argv[1]
-cardio_out_dir = "../cardio_results"
 cardio_beta = sys.argv[2]
+
 
 mpmath.mp.dps = 500
 def pval(x): return -mpmath.log10(1 - 0.5 * (1 + mpmath.erf(x/mpmath.sqrt(2))))

@@ -51,7 +51,6 @@ opt = parse_args(opt_parser);
 # opt$genotype   ="/usr/users/fsimone/datasets/cardiogenics/genotypes/CG_22.imputed.gz"
 # opt$donors     ="/usr/users/fsimone/datasets/cardiogenics/genotypes/CG.sample"
 # opt$expression ="/usr/users/fsimone/datasets/cardiogenics/cardio_mono_expr.txt"
-
 # opt$outdir     ="/usr/users/fsimone/pipeline/cardio_results"
 # opt$geneinfo   ="/usr/users/fsimone/datasets/gtex/genepos.gencode.v19.txt"
 # Gene expression samples: 744
@@ -98,6 +97,7 @@ donors_file_name = opt$donors;
 # crop matrix for genotypes only
 readGTEX<-function(SNP_file_name, donors_file_name, maf_filter=T, maf_thres=0.1) {
     message("Reading Genotype ...")
+    message(SNP_file_name)
     snps_mat = read.csv(file=SNP_file_name, sep=" ", stringsAsFactors=F, header=F)
     row_names = snps_mat[,2]
     donor_ids = read.csv(file=donors_file_name, sep=" ", stringsAsFactors=F, header=F)[,1]
@@ -127,6 +127,7 @@ readGTEX<-function(SNP_file_name, donors_file_name, maf_filter=T, maf_thres=0.1)
 
 readOxford<-function(SNP_file_name, donors_file_name, chrom, maf_filter=T, maf_thres=0.1) {
     message("Reading Genotype ...")
+    message(SNP_file_name)
     snps_mat = read.csv(file=SNP_file_name, sep=" ", stringsAsFactors=F, header=F)
     row_names = snps_mat[,2]
     donor_ids = read.csv(file=donors_file_name, sep=" ", stringsAsFactors=F, header=F, comment.char="#")[,1]
@@ -158,6 +159,11 @@ readOxford<-function(SNP_file_name, donors_file_name, chrom, maf_filter=T, maf_t
     return(list(dosages_mat, snpspos))
 }
 
+if (is.null(opt$chrom)) {
+    warning("Chromosome number has not been set")
+}
+
+
 
 if (opt$dataset == "gtex"){
     res = readGTEX(SNP_file_name, donors_file_name)
@@ -165,7 +171,7 @@ if (opt$dataset == "gtex"){
 
 if (opt$dataset == "cardiogenics") {
 
-    if (!is.null(opt$chrom)) {
+    if (is.null(opt$chrom)) {
         stop("Chromosome number required for reading Cardiogenics data")
     }
 
@@ -234,8 +240,8 @@ if (is.null(opt$covariates)) {
 }
 
 # Output file name
-output_file_name_cis = paste(opt$outdir, "/",opt$dataset, "_MatrixEQTL.cisout", sep="");
-output_file_name_tra = paste(opt$outdir, "/",opt$dataset, "_MatrixEQTL.transout", sep="");
+output_file_name_cis = paste(opt$outdir, "/",opt$dataset, "_MatrixEQTL_chr", opt$chrom, ".cisout", sep="");
+output_file_name_tra = paste(opt$outdir, "/",opt$dataset, "_MatrixEQTL_chr", opt$chrom, ".transout", sep="");
 dir.create(file.path(opt$outdir), showWarnings = FALSE, recursive=TRUE)
 
 # Only associations significant at this level will be saved
