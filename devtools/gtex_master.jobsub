@@ -26,7 +26,7 @@ GENEINFO=_GENINF_
 SBETA=_BETA_
 METHOD=_METHOD_
 CHROM=_CHROM_
-#source activate py35
+
 mpirun -n 8 ${RUN_PATH} --oxf          ${GENOFILE} \
                         --fam          ${SAMPFILE} \
                         --gx           ${GXPRFILE} \
@@ -40,4 +40,6 @@ mpirun -n 8 ${RUN_PATH} --oxf          ${GENOFILE} \
                         --prior-sigma  ${SBETA}	\
               		--dosage	\
                         --chrom        ${CHROM} \
-                        _MOD_
+                        _OPTSAMPL_   \
+                        _XTRAF_    \
+                        

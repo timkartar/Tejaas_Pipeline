@@ -3,8 +3,6 @@
 # USERSAMPL="${HOME}/Tejaas_Pipeline/devtools/macro_usersamples.txt"
 USERSAMPL="${HOME}/Tejaas_Pipeline/devtools/mono_usersamples.txt"
 
-# --force-cis # --force-trans
-
 method="jpa-rr"
 mod="--cismask" #\t--selected-donors\t${USERSAMPL}" #\t--force-cis"
 

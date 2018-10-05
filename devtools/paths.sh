@@ -1,22 +1,38 @@
 #!/bin/bash
 
 TEJAAS="${HOME}/tejaas/bin/tejaas"
+BASE_DIR="/cbscratch/franco"
 
-CARDIO_INPUTDIR="${HOME}/datasets/cardiogenics"
-CARDIO_OUTDIRBASE="${HOME}/pipeline/cardio_results"
+ ##### Cardiogenics
 
-CARDIO_GTFILE="${CARDIO_INPUTDIR}/genotypes/CG___CHROM__.imputed.gz"
-CARDIO_GXFILE="${CARDIO_INPUTDIR}/cardio_mono_expr.txt"
-CARDIO_DONORS="${CARDIO_INPUTDIR}/genotypes/CG.sample"
-CARDIO_GENINF="${CARDIO_INPUTDIR}/gencode.v19.annotation.gtf.gz"
+DATASET="cardio"
+
+# OUTDIRMOD="${DATASET}_forcecis_cismask_mpi"
+OUTDIRNAME="${DATASET}_cismask_mpi_newtest"
+# OUTDIRMOD="${DATASET}_macro_us" #user samples + cismask
+# OUTDIRMOD="${DATASET}_mono_us" #user samples + cismask
+
+
+INPUTDIR="${BASE_DIR}/datasets/cardiogenics"
+OUTDIRBASE="/cbscratch/franco/tejaas_output/output/${OUTDIRNAME}"
+GTFILE="${INPUTDIR}/genotypes/CG___CHROM__.imputed.gz"
+DONORS="${INPUTDIR}/genotypes/CG.sample"
+GENINF="${INPUTDIR}/gencode.v19.annotation.gtf.gz"
+
+GXFILE="${INPUTDIR}/cardio_mono_expr.txt"
+# GXFILE="${INPUTDIR}/cardio_macro_expr.txt"
+# GXFILE="${INPUTDIR}/cardio_mono_expr.txt.common_samples"
+# GXFILE="${INPUTDIR}/cardio_macro_expr.txt.common_samples"
 
 
 
 
-GTEX_INPUTDIR="${HOME}/datasets/gtex"
-GTEX_OUTDIRBASE="${HOME}/pipeline/gtex_results"
 
-GTEX_GTFILE="${GTEX_INPUTDIR}/GTEx_450Indiv_genot_imput_info04_maf01_HWEp1E6_dbSNP135IDs_donorIDs_dosage_chr__CHROM__.gz"
-GTEX_GXFILE="${GTEX_INPUTDIR}/Whole_Blood_Analysis.v6p.normalized.expression.txt"
-GTEX_DONORS="${GTEX_INPUTDIR}/donor_ids.fam"
-GTEX_GENINF="${GTEX_INPUTDIR}/gencode.v19.annotation.gtf.gz"
+DATASET="gtex"
+OUTDIRNAME="${DATASET}_cismask_mpi_newtest"
+INPUTDIR="${BASE_DIR}/datasets/gtex"
+OUTDIRBASE="/cbscratch/franco/tejaas_output/output/${OUTDIRNAME}"
+GTFILE="${INPUTDIR}/GTEx_450Indiv_genot_imput_info04_maf01_HWEp1E6_dbSNP135IDs_donorIDs_dosage_chr__CHROM__.gz"
+GXFILE="${INPUTDIR}/Whole_Blood_Analysis.v6p.normalized.expression.txt"
+DONORS="${INPUTDIR}/donor_ids.fam"
+GENINF="${INPUTDIR}/gencode.v19.annotation.gtf.gz"
