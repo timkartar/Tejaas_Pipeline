@@ -4,15 +4,31 @@ import numpy as np
 import os 
 import random
 import operator
-import mpmath
-import numpy as np
-import os 
-import random
-import operator
+import collections
+
+# OPTIONS_FIELDS = ['tejaas_method', 'pval_thres', 'zoom', 'zoom_percent']
+# class Options(collections.namedtuple('_Options', OPTIONS_FIELDS)):
+#     __slots__ = ()
 
 # decimal places
 mpmath.mp.dps = 500
 def pval(x): return mpmath.log10(1 - 0.5 * (1 + mpmath.erf(x/mpmath.sqrt(2))))
+
+def load_tejaas_jpa_results(chr_list, input_dir):
+    tejaas_dict = dict()
+    for chrm in chr_list:
+        print( "Reading TEJAAS chr{:d}".format(chrm))
+        dirc = os.path.join(input_dir, "chr{:d}".format(chrm))
+        pths = [os.path.join(dirc,path) for path in os.listdir(dirc) if "_jpa.txt" in path]
+        for pth in pths:
+            pvals= list()
+            l = open(str(pth),"r").readlines()
+            for line in l[1:]:    
+                arr      = line.strip().split("\t")
+                rsid     = arr[0]
+                jpascore = float(arr[1])
+                tejaas_dict[rsid] = jpascore
+    return tejaas_dict
 
 def load_tejaas_results(chr_list, input_dir):
     tejaas_dict = dict()
@@ -33,41 +49,6 @@ def load_tejaas_results(chr_list, input_dir):
                 pvalue= np.log10(P) if P!=0 else pval((Q-Mu)/Sigma)
                 tejaas_dict[rsid] = pvalue 
     return tejaas_dict
-
-def load_tejaas_results_old(chr_list, gtex_dir, cardio_dir):
-    gtex_dict = dict()
-    cardio_dict = dict()
-    for chrm in chr_list:
-        print( "Reading TEJAAS chr{:d}".format(chrm))
-        dirc = os.path.join(gtex_dir, "chr{:d}".format(chrm))
-        pths = [os.path.join(dirc,path) for path in os.listdir(dirc) if "_rr.txt" in path]
-        for pth in pths:
-            pvals= list()
-            l = open(str(pth),"r").readlines()
-            for line in l[1:]:    
-                arr   = line.strip().split("\t")
-                rsid  = arr[0]
-                P     = float(arr[5])
-                Q     = float(arr[2])
-                Mu    = float(arr[3])
-                Sigma = float(arr[4])
-                pvalue= np.log10(P) if P!=0 else pval((Q-Mu)/Sigma)
-                gtex_dict[rsid] = pvalue              
-        dirc = os.path.join(cardio_dir, "chr{:d}".format(chrm))
-        pths = [os.path.join(dirc,path) for path in os.listdir(dirc) if "_rr.txt" in path]
-        for pth in pths:
-            pvals = list()
-            l = open(str(pth),"r").readlines()
-            for line in l[1:]:
-                arr   = line.strip().split("\t")
-                rsid  = arr[0]
-                P     = float(arr[5])
-                Q     = float(arr[2])
-                Mu    = float(arr[3])
-                Sigma = float(arr[4])
-                pvalue= np.log10(P) if P!=0 else pval((Q-Mu)/Sigma)
-                cardio_dict[rsid] = pvalue
-    return gtex_dict, cardio_dict
 
 def load_tejaas_results_orig(chr_list, gtex_dir, cardio_dir):
     gtex_dict = dict()
@@ -151,25 +132,23 @@ def get_compatible_snp_dicts(dict1, dict2):
     k1  = list(dict1.keys())
     k2  = list(dict2.keys())
 
-    dict1 = copy.deepcopy(dict1)  # takes ~ 1.21 s
-    dict2 = copy.deepcopy(dict2)    
+    ndict1 = copy.deepcopy(dict1)  # takes ~ 1.21 s
+    ndict2 = copy.deepcopy(dict2)    
 
     # see if snps in test_dict are in validated_dict
     for k in k1:
-        val2 = dict2.get(k, None) 
+        val2 = ndict2.get(k, None) 
         if val2 == None:
-            del dict1[k]
+            del ndict1[k]
 
     for k in k2:
-        val1 = dict1.get(k, None) 
+        val1 = ndict1.get(k, None) 
         if val1 == None:
-            del dict2[k]
+            del ndict2[k]
 
-#     print(len(list(dict1.keys())))
-#     print(len(list(dict2.keys())))
-    return dict1, dict2
+    return ndict1, ndict2
 
-def get_replication_sizes(test_dict, validation_dict, pval_thres=np.log10(0.05)):        
+def get_replication_sizes(test_dict, validation_dict, title, pval_thres=np.log10(0.05)):        
 #     pval_thres = np.log10(0.05)
     
     rsids1  = list(test_dict.keys())
@@ -194,7 +173,7 @@ def get_replication_sizes(test_dict, validation_dict, pval_thres=np.log10(0.05))
 
     common_signif_snps = [snp for snp in signif_snps1 if snp in signif_snps2]
 
-    print("Nº snps1|Nº snps2| common |  %   |Nº sig1 |Nº sig2 |NºC sig1|NºC sig2| common |   %  ")
+    print("Algorithm      |Nº snps1|Nº snps2| common |  %   |Nº sig1 |Nº sig2 |NºC sig1|NºC sig2| common |   %  ")
 
     if n_snps1 > 0 and n_snps2 > 0:
         int_ratio = 100*common_n_snps/min(n_snps1, n_snps2)
@@ -204,11 +183,48 @@ def get_replication_sizes(test_dict, validation_dict, pval_thres=np.log10(0.05))
         sig_ratio = 100*len(common_signif_snps)/min(nsig1, nsig2)
     else:
         sig_ratio = 0
-    print("{:8d}|{:8d}|{:8d}|{:6.2f}|{:8d}|{:8d}|{:8d}|{:8d}|{:8d}|{:6.2f}".format(n_snps1,\
+    print("{:15s}|{:8d}|{:8d}|{:8d}|{:6.2f}|{:8d}|{:8d}|{:8d}|{:8d}|{:8d}|{:6.2f}".format(title, n_snps1,\
         n_snps2, common_n_snps, int_ratio, nsig1, nsig2, \
         len(compat_signig_snps1), len(compat_signig_snps2), \
         len(common_signif_snps), sig_ratio))
+
+def get_validation_curve_jpa(test_dict, validation_dict, thres=20, randomize=False):    
+    n_snps = len(validation_dict.keys())
+    isReversed = True # descending order
+    validation_tuples = sorted(validation_dict.items(), key=operator.itemgetter(1),reverse=isReversed)
+    validation_rsids = [validation_tuples[i][0] for i in range(n_snps)]
+    validation_pvals = [validation_tuples[i][1] for i in range(n_snps)]
+
+    # test_pvals = [test_dict[e] for e in test_dict.keys()]
     
+    # print(np.min(validation_pvals), np.max(validation_pvals))
+    # print(np.min(test_pvals), np.max(test_pvals))
+    if randomize:
+        random.shuffle(validation_rsids)
+    
+    toplot = []
+    check_x = []
+    positives = []
+        
+    i = 0 
+    while(i < n_snps):
+        try:
+            if(test_dict[validation_rsids[i]] > thres):
+                positives.append(i)
+        except:
+            pass
+        i = i + 1
+        while(i < n_snps and validation_pvals[i] == validation_pvals[i-1]):
+            try:
+                if(test_dict[validation_rsids[i]] > thres):
+                    positives.append(i)
+            except:
+                pass
+            i = i + 1
+        check_x.append(i)
+        toplot.append(len(positives))
+    return check_x, toplot
+
 def get_validation_curve(test_dict, validation_dict, pval_thres=0.05, islog=True, randomize=False):    
     n_snps = len(validation_dict.keys())
     isReversed = True
@@ -288,14 +304,32 @@ def get_roc_curve(statistic, label):
             FP += 1
     return x_vals, i_vals, n_vals, recall, ppv
 
-def evaluate_replication(test_dict, validation_dict, islog=True, randomize=False, pval_thres = 0.05):
-#     test_dict = g_dict
-#     validation_dict = c_dict
+def evaluate_replication_jpa(test_dict, validation_dict, randomize=False, thres = 20):
+    isReversed = True  
 
+    v_keys = list(validation_dict.keys())
+    n_snps = len(v_keys)
+
+    label_dict = dict()
+    for k in v_keys:
+        label_dict[k] = True if validation_dict[k] >= thres else False
+
+    test_tuples = sorted(test_dict.items(), key=operator.itemgetter(1),reverse=isReversed)
+    test_rsids = [test_tuples[i][0] for i in range(n_snps)]
+    test_pvals = [test_tuples[i][1] for i in range(n_snps)]
+    
+    if randomize:
+        random.shuffle(test_rsids)
+        print("Randomized")
+    
+    # sort labels by pvalue in test set (rsids are already sorted by pval)
+    label = [label_dict[snp] for snp in test_rsids]
+    x_vals, i_vals, n_vals, recall, ppv = get_roc_curve(-np.array(test_pvals), label)
+    
+    return x_vals, i_vals, n_vals, recall, ppv
+
+def evaluate_replication(test_dict, validation_dict, islog=True, randomize=False, pval_thres = 0.05):
     isReversed = True
-#     randomize = False
-#     pval_thres = 0.05
-#     islog = True
 
     if islog:
         isReversed = False
@@ -322,3 +356,52 @@ def evaluate_replication(test_dict, validation_dict, islog=True, randomize=False
     x_vals, i_vals, n_vals, recall, ppv = get_roc_curve(test_pvals, label)
     
     return x_vals, i_vals, n_vals, recall, ppv
+
+def evaluate_replication_empirical(test_dict, validation_dict, islog=True, randomize=False, pval_thres = 0.05):
+    isReversed = True
+
+    if islog:
+        isReversed = False
+
+    v_keys = list(validation_dict.keys())
+    n_snps = len(v_keys)
+
+    validation_tuples = sorted(validation_dict.items(), key=operator.itemgetter(1),reverse=isReversed)
+    validation_rsids = [validation_tuples[i][0] for i in range(n_snps)]
+    validation_pvals = [validation_tuples[i][1] for i in range(n_snps)]
+
+    empirical005 = np.round(n_snps/20)
+    label_dict = dict()
+    for i, k in enumerate(validation_rsids):
+        label_dict[k] = True if i < empirical005 else False
+
+    test_tuples = sorted(test_dict.items(), key=operator.itemgetter(1),reverse=isReversed)
+    test_rsids = [test_tuples[i][0] for i in range(n_snps)]
+    test_pvals = [test_tuples[i][1] for i in range(n_snps)]
+
+    if randomize:
+        random.shuffle(test_rsids)
+        print("Randomized")
+
+    # sort labels by pvalue in test set (rsids are already sorted by pval)
+    label = [label_dict[snp] for snp in test_rsids]
+    x_vals, i_vals, n_vals, recall, ppv = get_roc_curve(test_pvals, label)
+
+    return x_vals, i_vals, n_vals, recall, ppv
+
+def get_ranks(my_dict, descending=True, randomize=False):
+    my_keys = list(my_dict.keys())
+    n_snps = len(my_keys)
+
+    tuples = sorted(my_dict.items(), key=operator.itemgetter(1),reverse=descending)
+    rsids = [tuples[i][0] for i in range(n_snps)]
+    pvals = [tuples[i][1] for i in range(n_snps)]
+
+    if randomize:
+        random.shuffle(rsids)
+        print("Randomized")
+
+    x_rank_dict = dict()
+    for i, k in enumerate(rsids):
+        x_rank_dict[k] = i
+    return x_rank_dict

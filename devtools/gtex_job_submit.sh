@@ -3,12 +3,14 @@
 source paths.sh
 
 beta=$2
+METHOD=$3
+MOD=$4
 INPUTDIR="${GTEX_INPUTDIR}"
-OUTDIRBASE="${GTEX_OUTDIRBASE}/beta_${beta}"
+OUTDIRBASE="${GTEX_OUTDIRBASE}/${METHOD}/beta_${beta}"
 JOBSUBDIR="${OUTDIRBASE}/jobsub"
 CWD=`pwd`
 
-MAX_NSNP=20000
+MAX_NSNP=100000
 SNPCUT=0.001
 GENCUT=0.001
 
@@ -21,6 +23,7 @@ while read j; do
     echo "Submitting jobs for Chromosome ${j}."
 
     GTFILE="${GTEX_GTFILE/__CHROM__/$j}"
+    CHROM=$j
     GXFILE="${GTEX_GXFILE}"
     DONORS="${GTEX_DONORS}"
     GENINF="${GTEX_GENINF}"
@@ -61,11 +64,15 @@ while read j; do
              s|_TEJAAS_|${TEJAAS}|g;
              s|_SNPCUT_|${SNPCUT}|g;
              s|_GENCUT_|${GENCUT}|g;
+             s|_METHOD_|${METHOD}|g;
+             s|_CHROM_|${CHROM}|g;
+             s|_MOD_|${MOD}|g;
              s|_BETA_|${beta}|g;" $1 > ${JOBSUBDIR}/${JOBNAME}.bsub
 
         # Submit the job
         cd ${JOBSUBDIR}
         ok=0
+        # workaround, sometimes the file was submitted to the cluster but not written to disk yet
         while [ $ok -lt 1 ]; do
             if [ -s ${JOBNAME}.bsub ]; then
                 bsub < ${JOBNAME}.bsub

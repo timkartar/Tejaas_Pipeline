@@ -34,9 +34,12 @@ class ReadOxford:
     
     # deafult is GTEx:
     #     - isdosage = True
-    #     - data_columns = 6
+    #     - meta_columns = 6
+    # cardiogenics:
+    #     - isdoage = False
+    #     - meta_columns = 5 # except using prefiltered GT, which is same as gtex
 
-    def __init__(self, gtfile, samplefile, startsnp=0, endsnp=1e15, isdosage=True, data_columns=6, chrom=None):
+    def __init__(self, gtfile, samplefile, startsnp=0, endsnp=1e15, isdosage=True, chrom=None):
         if isinstance(chrom, int) and chrom > 0 and chrom < 23:
             self._chrom = chrom
         else:
@@ -45,8 +48,11 @@ class ReadOxford:
         self._samplefile = samplefile
         self._startsnp = startsnp
         self._endsnp = endsnp
-        self._data_columns = data_columns
         self._isdosage = isdosage
+        if self._isdosage:
+            self._meta_columns = 6
+        else:
+            self._meta_columns = 5
         self._read_genotypes()
 
         
@@ -111,11 +117,11 @@ class ReadOxford:
                     self._nloci += 1
                     # print('reading '+str(self._nloci)+' snps, size of dosages is '+str(sys.getsizeof(dosage)), end='\r')
                     mline = snpline.split()
-                    ngenotypes = len(mline) - self._data_columns
+                    ngenotypes = len(mline) - self._meta_columns
                     if ngenotypes != self._nsample:
                         raise ValueError('Number of samples differ from genotypes')
 
-                    snp_dosage = np.array([float(x) for x in mline[self._data_columns:]])
+                    snp_dosage = np.array([float(x) for x in mline[self._meta_columns:]])
 
                     maf = sum(snp_dosage) / 2 / len(snp_dosage)
                     try:                               ######## change to get the chrom numberfrom gtfile
@@ -147,16 +153,16 @@ class ReadOxford:
                     self._nloci += 1
                     # print('reading '+str(self._nloci)+' snps, size of dosages is '+str(sys.getsizeof(dosage)), end='\r')
                     mline = snpline.split()
-                    ngenotypes = (len(mline) - self._data_columns) / 3
+                    ngenotypes = (len(mline) - self._meta_columns) / 3
                     if float(ngenotypes).is_integer():
                         if ngenotypes != self._nsample:
                             print('Number of samples differ from genotypes')
                             raise SAMPLE_NUMBER_ERROR;
                     else:
                         print('Number of columns in genotype frequencies not divisible by 3')
-                        raise GT_FREQS_ERROR;
+                        raise GT_FREQS_NUMBER_ERROR;
 
-                    gt_freqs = np.array([float(x) for x in mline[self._data_columns:]])
+                    gt_freqs = np.array([float(x) for x in mline[self._meta_columns:]])
 
                     indsAA = np.arange(0,self._nsample)*3
                     indsAB = indsAA + 1

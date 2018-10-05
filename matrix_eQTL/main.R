@@ -2,7 +2,7 @@
 # Matrix eQTL by Andrey A. Shabalin
 # http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/
 # 
-# Be sure to use an up to date version of R and Matrix eQTL.
+# Script for benchmarking by F. Simonetti
 
 
 
@@ -17,6 +17,8 @@ option_list = list(
               help="Chromosome number", metavar="number"),
     make_option(c("-d", "--donors"), type="character", default=NULL, 
               help="path to donor ids file name", metavar="character"),
+    make_option(c("-u", "--selectdonors"), type="character", default=NULL, 
+              help="path to selected donor ids file", metavar="character"),
     make_option(c("-i", "--geneinfo"), type="character", default=NULL, 
               help="path to gene info file name", metavar="character"),
     make_option(c("-s", "--dataset"), type="character", default=NULL, 
@@ -37,9 +39,9 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 # opt$dataset    ="gtex"
-# opt$genotype   ="/usr/users/fsimone/datasets/gtex/GTEx_450Indiv_genot_imput_info04_maf01_HWEp1E6_dbSNP135IDs_donorIDs_dosage_chr22.gz"
-# opt$donors     ="/usr/users/fsimone/datasets/gtex/donor_ids.fam"
-# opt$expression ="/usr/users/fsimone/datasets/gtex/Whole_Blood_Analysis.v6p.normalized.expression.txt"
+# opt$genotype   ="/cbscratch/franco/datasets/gtex/prefiltered/GTEx_450Indiv_filtered_chr22.gz"
+# opt$donors     ="/cbscratch/franco/datasets/gtex/donor_ids.fam"
+# opt$expression ="/cbscratch/franco/datasets/gtex/Whole_Blood_Analysis.v6p.normalized.expression.txt"
 # Gene expression samples: 338
 # Gene expression genes: 23152
 # Genotype SNPs: 72607
@@ -48,11 +50,13 @@ opt = parse_args(opt_parser);
 
 
 # opt$dataset    ="cardiogenics"
-# opt$genotype   ="/usr/users/fsimone/datasets/cardiogenics/genotypes/CG_22.imputed.gz"
-# opt$donors     ="/usr/users/fsimone/datasets/cardiogenics/genotypes/CG.sample"
-# opt$expression ="/usr/users/fsimone/datasets/cardiogenics/cardio_mono_expr.txt"
-# opt$outdir     ="/usr/users/fsimone/pipeline/cardio_results"
-# opt$geneinfo   ="/usr/users/fsimone/datasets/gtex/genepos.gencode.v19.txt"
+# opt$genotype   ="/cbscratch/franco/datasets/cardiogenics/genotypes/prefiltered/CG_dosages_filtered_22.imputed.gz"
+# opt$donors     ="/cbscratch/franco/datasets/cardiogenics/genotypes/CG.sample"
+# opt$expression ="/cbscratch/franco/datasets/cardiogenics/cardio_mono_expr.txt"
+# opt$outdir     ="/cbscratch/franco/tejaas_output/tests"
+# opt$geneinfo   ="/cbscratch/franco/datasets/gtex/genepos.gencode.v19.txt"
+# opt$chrom      = 22
+# opt$selectdonors="/usr/users/fsimone/Tejaas_Pipeline/devtools/mono_usersamples.txt"
 # Gene expression samples: 744
 # Gene expression genes: 15304
 # Genotype SNPs: 71200
@@ -81,9 +85,13 @@ if (opt$model == "modelLINEAR")
 if(is.null(opt$geneinfo)) {
     stop("Gene info file is missing");    
 } else {
-    genepos = read.table(opt$geneinfo, header = TRUE, stringsAsFactors = FALSE);        
+    genepos = read.table(opt$geneinfo, header = TRUE, stringsAsFactors = FALSE, colClasses = c("character", "character", "numeric", "numeric"));        
 }
 
+# Output file name
+output_file_name_cis = paste(opt$outdir, "/",opt$dataset, "_MatrixEQTL_chr", opt$chrom, ".cisout", sep="");
+output_file_name_tra = paste(opt$outdir, "/",opt$dataset, "_MatrixEQTL_chr", opt$chrom, ".transout", sep="");
+dir.create(file.path(opt$outdir), showWarnings = FALSE, recursive=TRUE)
 
 ## Location of the package with the data files.
 # base.dir = find.package('MatrixEQTL');
@@ -106,6 +114,7 @@ readGTEX<-function(SNP_file_name, donors_file_name, maf_filter=T, maf_thres=0.1)
     snpspos = snps_mat[,c(2,1,3)]
     snpspos[,2] = paste("chr", snpspos[,2], sep="")
     colnames(snpspos) = c("snpid","chr","pos")
+    snpspos[,3] = as.numeric(snpspos[,3])
 
     mafs = snps_mat[,6]
 
@@ -135,6 +144,7 @@ readOxford<-function(SNP_file_name, donors_file_name, chrom, maf_filter=T, maf_t
     snpspos = snps_mat[,c(2,1,3)]
     snpspos[,2] = rep(paste("chr", chrom, sep=""), nrow(snpspos))
     colnames(snpspos) = c("snpid","chr","pos")
+    snpspos[,3] = as.numeric(snpspos[,3])
 
     snps_mat_gt = snps_mat[,6:ncol(snps_mat)]
     AAindex = seq(1, ncol(snps_mat_gt),3)
@@ -181,7 +191,9 @@ if (opt$dataset == "cardiogenics") {
     genepos$geneid = ensembls
 
     # read genotype
-    res = readOxford(SNP_file_name, donors_file_name, opt$chrom)    
+    # res = readOxford(SNP_file_name, donors_file_name, opt$chrom)    
+    # after filtering the genotypes, it is all in GTEX format
+    res = readGTEX(SNP_file_name, donors_file_name)
 }
 
 snps_mat = res[[1]] #genotype matrix
@@ -205,16 +217,18 @@ gene$LoadFile(expression_file_name);
 
 
 # match columns of samples from genotype and expression
-# if (opt$dataset == "gtex") {
-#     col_index = match(colnames(gene), colnames(snps)) 
-#     if (all(colnames(snps)[col_index] == colnames(gene))) {
-#         snps$ColumnSubsample(col_index)    
-#     }
-# }
 
-common_donors = intersect(colnames(gene), colnames(snps))
-col_index1 = match(common_donors, colnames(gene))
-col_index2 = match(common_donors, colnames(snps))
+if (! is.null(opt$selectdonors)) {
+    message("Selecting donors from user list")
+    selectdonors = read.csv(file=opt$selectdonors, sep=" ", stringsAsFactors=F, header=F, comment.char="#")
+    col_index1 = match(selectdonors[[1]], colnames(gene))
+    col_index2 = match(selectdonors[[1]], colnames(snps))
+} else {
+    common_donors = intersect(colnames(gene), colnames(snps))
+    col_index1 = match(common_donors, colnames(gene))
+    col_index2 = match(common_donors, colnames(snps))
+}
+
 
 if (all(colnames(snps)[col_index2] == colnames(gene)[col_index1])) {
     gene$ColumnSubsample(col_index1)
@@ -239,10 +253,7 @@ if (is.null(opt$covariates)) {
     }
 }
 
-# Output file name
-output_file_name_cis = paste(opt$outdir, "/",opt$dataset, "_MatrixEQTL_chr", opt$chrom, ".cisout", sep="");
-output_file_name_tra = paste(opt$outdir, "/",opt$dataset, "_MatrixEQTL_chr", opt$chrom, ".transout", sep="");
-dir.create(file.path(opt$outdir), showWarnings = FALSE, recursive=TRUE)
+
 
 # Only associations significant at this level will be saved
 pvOutputThreshold_cis = opt$pvalcis;
