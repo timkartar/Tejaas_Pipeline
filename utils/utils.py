@@ -17,7 +17,7 @@ def pval(x): return mpmath.log10(1 - 0.5 * (1 + mpmath.erf(x/mpmath.sqrt(2))))
 def load_tejaas_jpa_results(chr_list, input_dir):
     tejaas_dict = dict()
     for chrm in chr_list:
-        print( "Reading TEJAAS chr{:d}".format(chrm))
+        print( "Reading TEJAAS chr{:d} from {:s}".format(chrm, input_dir))
         dirc = os.path.join(input_dir, "chr{:d}".format(chrm))
         pths = [os.path.join(dirc,path) for path in os.listdir(dirc) if "_jpa.txt" in path]
         for pth in pths:
@@ -33,7 +33,7 @@ def load_tejaas_jpa_results(chr_list, input_dir):
 def load_tejaas_results(chr_list, input_dir):
     tejaas_dict = dict()
     for chrm in chr_list:
-        print( "Reading TEJAAS chr{:d}".format(chrm))
+        print( "Reading TEJAAS chr{:d} from {:s}".format(chrm, input_dir))
         dirc = os.path.join(input_dir, "chr{:d}".format(chrm))
         pths = [os.path.join(dirc,path) for path in os.listdir(dirc) if "_rr.txt" in path]
         for pth in pths:
@@ -90,7 +90,7 @@ def load_tejaas_results_orig(chr_list, gtex_dir, cardio_dir):
 def load_matrixeqtl_results(chr_list, input_file):
     matrix_dict = {}
     for chrm in chr_list:
-        print( "Reading matrixEQTL chr{:d}".format(chrm))
+        print( "Reading matrixEQTL chr{:d} from {:s}".format(chrm, input_file))
         results_file = os.path.join(input_file.format(chrm))
         with open(results_file) as instream:
             _ = instream.readline()
@@ -101,32 +101,6 @@ def load_matrixeqtl_results(chr_list, input_file):
                 if rsid not in matrix_dict:
                     matrix_dict[rsid] = np.log10(FDR)
     return matrix_dict
-
-def load_matrixeqtl_results_old(chr_list, gtex_dir, cardio_dir):
-    gtex_matrix_dict = {}
-    cardio_matrix_dict = {}
-    for chrm in chr_list:
-        print( "Reading matrixEQTL chr{:d}".format(chrm))
-        results_file = os.path.join(gtex_dir, "gtex_MatrixEQTL_chr{:d}.transout".format(chrm))
-        with open(results_file) as instream:
-            _ = instream.readline()
-            for line in instream:
-                arr  = line.rstrip().split("\t")
-                rsid = arr[0]
-                FDR  = float(arr[5])
-                if rsid not in gtex_matrix_dict:
-                    gtex_matrix_dict[rsid] = np.log10(FDR)
-        
-        results_file = os.path.join(cardio_dir, "cardiogenics_MatrixEQTL_chr{:d}.transout".format(chrm))
-        with open(results_file) as instream:
-            _ = instream.readline()
-            for line in instream:
-                arr  = line.rstrip().split("\t")
-                rsid = arr[0]
-                FDR  = float(arr[5])
-                if rsid not in cardio_matrix_dict:
-                    cardio_matrix_dict[rsid] = np.log10(FDR)
-    return gtex_matrix_dict, cardio_matrix_dict
 
 def get_compatible_snp_dicts(dict1, dict2):
     k1  = list(dict1.keys())
@@ -302,7 +276,7 @@ def get_roc_curve(statistic, label):
             TP += 1
         else:
             FP += 1
-    return x_vals, i_vals, n_vals, recall, ppv
+    return np.array(x_vals), np.array(i_vals), np.array(n_vals), np.array(recall), np.array(ppv)
 
 def evaluate_replication_jpa(test_dict, validation_dict, randomize=False, thres = 20):
     isReversed = True  

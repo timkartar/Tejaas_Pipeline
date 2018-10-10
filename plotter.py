@@ -135,16 +135,26 @@ def get_xy_roc_validation(result_dicts, algorithm, options, randomize=False):
                 x_vals, i_vals, n_vals, recall, ppv = utils.evaluate_replication(test_dict, validation_dict, randomize=randomize)
         if options['tejaas_method'] == "jpa":
             x_vals, i_vals, n_vals, recall, ppv = utils.evaluate_replication_jpa(test_dict, validation_dict, randomize=randomize)
+    
     if algorithm == "MatrixEQTL":
-        mqtl_gtex_dict     = result_dicts["mqtl_test"]
-        mqtl_cardio_dict   = result_dicts["mqtl_valid"]
-        validation_dict, test_dict = utils.get_compatible_snp_dicts(mqtl_gtex_dict, mqtl_cardio_dict)
+        mqtl_test_dict    = result_dicts["mqtl_test"]
+        mqtl_valid_dict   = result_dicts["mqtl_valid"]
+        test_dict, validation_dict = utils.get_compatible_snp_dicts(mqtl_test_dict, mqtl_valid_dict)
         if options['replication'] == "empirical":
             x_vals, i_vals, n_vals, recall, ppv = utils.evaluate_replication_empirical(test_dict, validation_dict, randomize=randomize)
         else:
             x_vals, i_vals, n_vals, recall, ppv = utils.evaluate_replication(test_dict, validation_dict, randomize=randomize)
     
-    return x_vals, np.array(i_vals), n_vals, recall, ppv
+    if options["scale"]:
+        i_vals = i_vals/max(i_vals)
+    if options['zoom']:
+        zoom_limit = int(options['zoom_percent'] * len(i_vals))
+        x_vals = x_vals[:zoom_limit]
+        i_vals = i_vals[:zoom_limit]
+        n_vals = n_vals[:zoom_limit]
+        recall = recall[:zoom_limit]
+        ppv = ppv[:zoom_limit]
+    return x_vals, i_vals, n_vals, recall, ppv
 
 
 def plot_roc_validation(result_dicts, algorithms, options, outfile):

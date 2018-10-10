@@ -4,7 +4,7 @@ export TEJAAS="${HOME}/tejaas/bin/tejaas"
 BASE_DIR="/cbscratch/franco"
 DATASET="cardio"
 INPUTDIR="${BASE_DIR}/datasets/cardiogenics"
-OUTDIRPATH="/cbscratch/franco/tejaas_output/output/"
+OUTDIRPATH="/cbscratch/franco/tejaas_output/output2/"
 
 export GTFILE="${INPUTDIR}/genotypes/CG___CHROM__.imputed.gz"
 export DONORS="${INPUTDIR}/genotypes/CG.sample"
@@ -15,7 +15,8 @@ method="jpa-rr"
 ##################################################
 ################ MONOCYTES #######################
 ##################################################
-export GXFILE="${INPUTDIR}/cardio_mono_expr.txt"
+# export GXFILE="${INPUTDIR}/cardio_mono_expr.txt"
+export GXFILE="${INPUTDIR}/cardio_mono_matrix_nodup.txt.gencode_filter"
 
 # ~~ with cismask ~~
 export EXTRAFLAGS="--cismask" #\t--force-cis # \t--force-trans
@@ -33,7 +34,6 @@ export OUTDIRBASE="${OUTDIRPATH}/${DATASET}_mono_cismask_us"
 while read cardio_beta; do
     ./job_submit.sh cardio_master.jobsub $cardio_beta $method
 done < sbetas.txt
-
 export OPT_SAMPLES=""
 
 
@@ -51,7 +51,8 @@ done < sbetas.txt
 ####################################################
 ################ MACROPHAGES #######################
 ####################################################
-export GXFILE="${INPUTDIR}/cardio_macro_expr.txt"
+# export GXFILE="${INPUTDIR}/cardio_macro_expr.txt"
+export GXFILE="${INPUTDIR}/cardio_macro_matrix_nodup.txt.gencode_filter"
 
 # ~~ with cismask ~~
 
@@ -59,7 +60,7 @@ export EXTRAFLAGS="--cismask"
 export OUTDIRBASE="${OUTDIRPATH}/${DATASET}_macro_cismask"
 
 while read cardio_beta; do
-    ./job_submit.sh cardio_master.jobsub $cardio_beta $method $mod
+    ./job_submit.sh cardio_master.jobsub $cardio_beta $method
 done < sbetas.txt
 
 
@@ -77,11 +78,10 @@ export OPT_SAMPLES=""
 # ~~ without cismask ~~
 
 export EXTRAFLAGS=""
-export GXFILE="${INPUTDIR}/cardio_macro_expr.txt"
 export OUTDIRBASE="${OUTDIRPATH}/${DATASET}_macro"
 
 while read cardio_beta; do
-    ./job_submit.sh cardio_master.jobsub $cardio_beta $method $mod
+    ./job_submit.sh cardio_master.jobsub $cardio_beta $method
 done < sbetas.txt
 
 # GXFILE="${INPUTDIR}/cardio_mono_expr.txt.common_samples"
