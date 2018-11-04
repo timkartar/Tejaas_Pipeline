@@ -50,43 +50,6 @@ def load_tejaas_results(chr_list, input_dir):
                 tejaas_dict[rsid] = pvalue 
     return tejaas_dict
 
-def load_tejaas_results_orig(chr_list, gtex_dir, cardio_dir):
-    gtex_dict = dict()
-    cardio_dict = dict()
-    for chrm in chr_list:
-        print( "Reading TEJAAS chr{:d}".format(chrm))
-        dirc = os.path.join(gtex_dir, "chr{:d}".format(chrm))
-        pths = [os.path.join(dirc,path) for path in os.listdir(dirc) if "_rr.txt" in path]
-        for pth in pths:
-            pvals= list()
-            l = open(str(pth),"r").readlines()
-            rsids = [line.split("\t")[0] for line in l[1:]]
-            for line in l[1:]:    
-                P     = float(line.split("\t")[5])
-                Q     = float(line.split("\t")[2])
-                Mu    = float(line.split("\t")[3])
-                Sigma = float(line.split("\t")[4])
-                pvals.append(np.log10(P) if P!=0 else pval((Q-Mu)/Sigma))
-            for i in range(len(rsids)):
-                gtex_dict[rsids[i]] = pvals[i]
-
-        dirc = os.path.join(cardio_dir, "chr{:d}".format(chrm))
-        pths = [os.path.join(dirc,path) for path in os.listdir(dirc) if "_rr.txt" in path]
-        for pth in pths:
-            pvals = list()
-            l = open(str(pth),"r").readlines()
-            rsids = [line.split("\t")[0] for line in l[1:]]
-            for line in l[1:]:
-                P     = float(line.split("\t")[5])
-                Q     = float(line.split("\t")[2])
-                Mu    = float(line.split("\t")[3])
-                Sigma = float(line.split("\t")[4])
-                pvals.append(np.log10(P) if P!=0 else pval((Q-Mu)/Sigma))
-            for i in range(len(rsids)):
-                cardio_dict[rsids[i]] = pvals[i]
-    return gtex_dict, cardio_dict
-
-
 def load_matrixeqtl_results(chr_list, input_file):
     matrix_dict = {}
     for chrm in chr_list:
@@ -109,7 +72,7 @@ def get_compatible_snp_dicts(dict1, dict2):
     ndict1 = copy.deepcopy(dict1)  # takes ~ 1.21 s
     ndict2 = copy.deepcopy(dict2)    
 
-    # see if snps in test_dict are in validated_dict
+    # see if snps in dict1 are in dict2
     for k in k1:
         val2 = ndict2.get(k, None) 
         if val2 == None:
@@ -121,6 +84,77 @@ def get_compatible_snp_dicts(dict1, dict2):
             del ndict2[k]
 
     return ndict1, ndict2
+
+
+def get_sorted_dict_tuples(mydict):
+    isReversed = False
+    v_keys = list(mydict.keys())
+    n_snps = len(v_keys)
+    my_tuples = sorted(my_dict.items(), key=operator.itemgetter(1),reverse=isReversed)
+    my_rsids = [my_tuples[i][0] for i in range(n_snps)]
+    my_pvals = [my_tuples[i][1] for i in range(n_snps)]
+    return my_rsids, my_pvals
+
+def get_empirical_replication_sizes(test_dict, validation_dict, title, pval_thres=np.log10(0.05)):        
+#     pval_thres = np.log10(0.05)
+    
+    rsids1  = list(test_dict.keys())
+    rsids2  = list(validation_dict.keys())
+
+    n_snps1 = len(rsids1)
+    n_snps2 = len(rsids2)
+
+#     common_snps = [snp for snp in rsids1 if validation_dict.get(snp, None) != None ]
+    compat_test_dict, compat_validation_dict = get_compatible_snp_dicts(test_dict, validation_dict)
+    compat_rsids = list(compat_test_dict.keys())
+    common_n_snps = len(compat_rsids)
+
+    validation_rsids, validation_pvals = get_sorted_dict_tuples(validation_dict)
+
+    empirical005 = np.round(n_snps/20)
+    label_dict = dict()
+    ntrue = 0
+    for i, k in enumerate(validation_rsids):
+        ntrue += 1
+        label_dict[k] = True if i < empirical005 else False
+
+    print("ntrue: ", ntrue)
+
+
+    test_tuples = sorted(test_dict.items(), key=operator.itemgetter(1),reverse=isReversed)
+    test_rsids = [test_tuples[i][0] for i in range(n_snps)]
+    test_pvals = [test_tuples[i][1] for i in range(n_snps)]
+
+
+
+
+
+    signif_snps1 = [snp for snp in rsids1 if test_dict[snp] < pval_thres]
+    signif_snps2 = [snp for snp in rsids2 if validation_dict[snp] < pval_thres]
+
+    nsig1 = len(signif_snps1)
+    nsig2 = len(signif_snps2)
+    
+    compat_signig_snps1 = [snp for snp in compat_rsids if compat_test_dict[snp] < pval_thres]
+    compat_signig_snps2 = [snp for snp in compat_rsids if compat_validation_dict[snp] < pval_thres]
+
+    common_signif_snps = [snp for snp in signif_snps1 if snp in signif_snps2]
+
+    print("Algorithm      |Nº snps1|Nº snps2| common |  %   |Nº sig1 |Nº sig2 |NºC sig1|NºC sig2| common |   %  ")
+
+    if n_snps1 > 0 and n_snps2 > 0:
+        int_ratio = 100*common_n_snps/min(n_snps1, n_snps2)
+    else:
+        int_ratio = 0
+    if nsig1 > 0 and nsig2 > 0:
+        sig_ratio = 100*len(common_signif_snps)/min(nsig1, nsig2)
+    else:
+        sig_ratio = 0
+    print("{:15s}|{:8d}|{:8d}|{:8d}|{:6.2f}|{:8d}|{:8d}|{:8d}|{:8d}|{:8d}|{:6.2f}".format(title, n_snps1,\
+        n_snps2, common_n_snps, int_ratio, nsig1, nsig2, \
+        len(compat_signig_snps1), len(compat_signig_snps2), \
+        len(common_signif_snps), sig_ratio))
+
 
 def get_replication_sizes(test_dict, validation_dict, title, pval_thres=np.log10(0.05)):        
 #     pval_thres = np.log10(0.05)
@@ -241,17 +275,16 @@ def get_validation_curve(test_dict, validation_dict, pval_thres=0.05, islog=True
     return check_x, toplot
 
 def get_roc_curve(statistic, label):
+    print("getting ROC curve")
     x_vals = []
     i_vals = []
     n_vals = []
     recall = []
     ppv    = []
     total_TP = np.sum(label)
-    
     TP = 0
     FP = 0
     n  = 0
-
     if label[0]:
         TP += 1
     else:
@@ -261,8 +294,7 @@ def get_roc_curve(statistic, label):
     i_vals.append(0)
     n_vals.append(n)
     recall.append(TP/total_TP)
-    ppv.append(TP/(TP+FP))
-    
+    ppv.append(TP/(TP+FP))  
     for i in range(1, len(statistic)):
         if statistic[i] > statistic[i-1]:
             n += 1
@@ -271,11 +303,17 @@ def get_roc_curve(statistic, label):
             i_vals.append(i)
             recall.append(TP/total_TP)
             ppv.append(TP/(TP+FP))
-
         if label[i]:
             TP += 1
         else:
             FP += 1
+    # x_vals.append(statistic[-1])
+    # n_vals.append(n+1)
+    # i_vals.append(len(statistic))
+    # recall.append(TP/total_TP)
+    # ppv.append(TP/(TP+FP))
+    print("roc curve finished")
+
     return np.array(x_vals), np.array(i_vals), np.array(n_vals), np.array(recall), np.array(ppv)
 
 def evaluate_replication_jpa(test_dict, validation_dict, randomize=False, thres = 20):

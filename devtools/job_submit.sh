@@ -19,8 +19,8 @@ while read j; do
 
     echo "Submitting jobs for Chromosome ${j}."
 
-    GTFILE="${GTFILE/__CHROM__/$j}"
     CHROM=$j
+    GTFILE="${GTPATH/__CHROM__/$CHROM}"
     GXFILE="${GXFILE}"
     DONORS="${DONORS}"
     GENINF="${GENINF}"

@@ -21,7 +21,7 @@ sets = defaultdict(lambda: None)
 sets["TEJAAS"] = defaultdict(lambda: None)
 sets["MatrixEQTL"] = defaultdict(lambda: None)
 
-tejaas_outdir = "output/"
+tejaas_outdir = "output3/"
 
 params = defaultdict(lambda: None)
 params["name"]         = "cardio"
@@ -41,7 +41,7 @@ params["samples"]      = "us"
 params["datadir"]      = tejaas_outdir+"cardio_mono_cismask_us"
 sets["TEJAAS"]["cardio_mono_cismask_us"] = copy.deepcopy(params)
 
-params["cismask"]      = ""
+params["cismask"]      = "nocismask"
 params["peer"]         = ""
 params["samples"]      = ""
 params["datadir"]      = tejaas_outdir+"cardio_mono"
@@ -66,7 +66,7 @@ params["samples"]      = "us"
 params["datadir"]      = tejaas_outdir+"cardio_macro_cismask_us"
 sets["TEJAAS"]["cardio_macro_cismask_us"] = copy.deepcopy(params)
 
-params["cismask"]      = ""
+params["cismask"]      = "nocismask"
 params["peer"]         = ""
 params["samples"]      = ""
 params["datadir"]      = tejaas_outdir+"cardio_macro"
@@ -88,12 +88,40 @@ params["datadir"]      = tejaas_outdir+"gtex_wb_cismask"
 sets["TEJAAS"]["gtex_wb_cismask"] = copy.deepcopy(params)
 
 
-params["cismask"]      = ""
+params["cismask"]      = "nocismask"
 params["peer"]         = ""
 params["samples"]      = ""
 params["datadir"]      = tejaas_outdir+"gtex_wb"
 sets["TEJAAS"]["gtex_wb"] = copy.deepcopy(params)
 
+params["tissue"]       = "hlv"
+params["tissue title"] = "Heart Left Ventricle"
+params["cismask"]      = "cismask"
+params["peer"]         = ""
+params["samples"]      = ""
+params["datadir"]      = tejaas_outdir+"gtex_hlv_cismask"
+sets["TEJAAS"]["gtex_hlv_cismask"] = copy.deepcopy(params)
+
+params["cismask"]      = "nocismask"
+params["peer"]         = ""
+params["samples"]      = ""
+params["datadir"]      = tejaas_outdir+"gtex_hlv"
+sets["TEJAAS"]["gtex_hlv"] = copy.deepcopy(params)
+
+
+params["tissue"]       = "ms"
+params["tissue title"] = "Muscle Skeletal"
+params["cismask"]      = "cismask"
+params["peer"]         = ""
+params["samples"]      = ""
+params["datadir"]      = tejaas_outdir+"gtex_ms_cismask"
+sets["TEJAAS"]["gtex_ms_cismask"] = copy.deepcopy(params)
+
+params["cismask"]      = "nocismask"
+params["peer"]         = ""
+params["samples"]      = ""
+params["datadir"]      = tejaas_outdir+"gtex_ms"
+sets["TEJAAS"]["gtex_ms"] = copy.deepcopy(params)
 
 
 matrixeqtl_outdir = "matrixEQTL_out_filteredGT_gencode/"
@@ -104,13 +132,23 @@ params["basename"]     = "gtex"
 params["title"]        = "GTEx"
 params["tissue"]       = "wb"
 params["tissue title"] = "Whole Blood"
-params["cismask"]      = ""
+params["cismask"]      = "cismask"
 params["peer"]         = ""
 params["samples"]      = ""
 params["datadir"]      = matrixeqtl_outdir+"gtex_wb"
 params["transfile"]    = "gtex_MatrixEQTL_chr{:d}.transout"
 params["cisfile"]      = "gtex_MatrixEQTL_chr{:d}.cisout"
 sets["MatrixEQTL"]["gtex_wb"] = copy.deepcopy(params)
+
+params["tissue"]       = "hlv"
+params["tissue title"] = "Heart Left Ventricle"
+params["datadir"]      = matrixeqtl_outdir+"gtex_hlv"
+sets["MatrixEQTL"]["gtex_hlv"] = copy.deepcopy(params)
+
+params["tissue"]       = "ms"
+params["tissue title"] = "Muscle Skeletal"
+params["datadir"]      = matrixeqtl_outdir+"gtex_ms"
+sets["MatrixEQTL"]["gtex_ms"] = copy.deepcopy(params)
 
 
 params = defaultdict(lambda: None)
@@ -119,7 +157,7 @@ params["basename"]     = "cardiogenics"
 params["title"]        = "Cardiogenics"
 params["tissue"]       = "mono"
 params["tissue title"] = "Monocytes"
-params["cismask"]      = ""
+params["cismask"]      = "cismask"
 params["peer"]         = ""
 params["samples"]      = ""
 params["datadir"]      = matrixeqtl_outdir+"cardiogenics_mono"
@@ -139,7 +177,7 @@ params["basename"]     = "cardiogenics"
 params["title"]        = "Cardiogenics"
 params["tissue"]       = "macro"
 params["tissue title"] = "Macrophages"
-params["cismask"]      = ""
+params["cismask"]      = "cismask"
 params["peer"]         = ""
 params["samples"]      = ""
 params["datadir"]      = matrixeqtl_outdir+"cardiogenics_macro"

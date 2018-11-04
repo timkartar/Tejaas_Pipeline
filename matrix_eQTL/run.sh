@@ -29,7 +29,7 @@ INPUTDIR="/cbscratch/franco/datasets/cardiogenics"
 # OUTDIRBASE="/cbscratch/franco/tejaas_output/matrixEQTL_out/cardio_results"
 OUTDIRBASE="/cbscratch/franco/tejaas_output/matrixEQTL_out/cardio_results_macro_us"
 
-GTFILE="${INPUTDIR}/genotypes/CG_${CHROM}.imputed.gz"
+GTFILE="${INPUTDIR}/genotypes/prefiltered_dosages/CG_${CHROM}.imputed.gz"
 
 # GXFILE="${INPUTDIR}/cardio_mono_expr.txt"
 GXFILE="${INPUTDIR}/cardio_macro_expr.txt"
