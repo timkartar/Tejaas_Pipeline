@@ -3,7 +3,6 @@
 source "./CONFIG.sh"
 
 mkdir -p $COVDIR
-mkdir -p $PEEREXPRDIR
 
 while IFS='' read -r line || [ -n "$line" ]; do
     fullname=$(echo "$line" | cut -f 1 )
@@ -18,15 +17,16 @@ while IFS='' read -r line || [ -n "$line" ]; do
         grep -v -i "inferred" $GTEXCOV > $COVARS
 
         if [ $RUNPEER = true ]; then
-            # get PEER covariates correcting for covariates above
-            PEERPREFIX="${shortname}_gtex.${NCOV}peer.covariates.txt"
-            EXPRFILE="${EXPROUTDIR}/gtex.normalized.expression.${shortname}.txt"
-            
-            echo Rscript PEER.R $EXPRFILE $PEERPREFIX --n $NCOV --covar $COVARS -o $COVDIR
+            for NCOV in `seq 5 5 $MAXNCOV`;
+            do
+                # get PEER covariates correcting for covariates above
+                PEERPREFIX="${shortname}_gtex.${NCOV}ncov"
+                EXPRFILE="${EXPROUTDIR}/gtex.normalized.expression.${shortname}.txt"
+                
+                Rscript PEER.R $EXPRFILE $PEERPREFIX --n $NCOV --covar $COVARS -o $COVDIR
+            done
         fi
-
-        # PEERresiduals="${COVDIR}/${PEERPREFIX}_PEER_residuals.txt"
-        # PEEREXPR="${PEEREXPRDIR}/${shortname}_gtex.normalized.${NCOV}peer.expression.txt"
-        # mv $PEERresiduals $PEEREXPR
+    else
+        echo "No GTEx covariate file for $fullname"
     fi
 done < $TISSUEFILE

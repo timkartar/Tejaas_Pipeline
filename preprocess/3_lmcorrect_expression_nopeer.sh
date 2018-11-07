@@ -12,7 +12,9 @@ while IFS='' read -r line || [ -n "$line" ]; do
     COVARS="${GTEXCOVDIR}/${shortname}_nopeer_covariates.txt"
     EXPRFILE="${EXPROUTDIR}/gtex.normalized.expression.${shortname}.txt"
     LMOUTFILE="${LMOUTDIR}/gtex.normalized.expression.lmcorrected.${shortname}.txt"
-    if [ -e $exprfile ] && [ -e $covfile ]; then
+    if [ -e $EXPRFILE ] && [ -e $COVARS ]; then
         Rscript correct_expr_lm.R $EXPRFILE $LMOUTFILE $COVARS
+    else
+        echo "$fullname covariates not found"
     fi
 done < $TISSUEFILE
