@@ -9,7 +9,7 @@ INPUTDIR="/cbscratch/franco/datasets"
 GTFILE="${INPUTDIR}/cardiogenics/genotypes/CG_${CHROM}.imputed.gz"
 DONORS="${INPUTDIR}/cardiogenics/genotypes/CG.sample"
 
-OUTDIR="${INPUTDIR}/cardiogenics/genotypes/prefiltered"
+OUTDIR="${INPUTDIR}/cardiogenics/genotypes/prefiltered_dosages"
 OUTFILE="${OUTDIR}/CG_dosages_filtered_${CHROM}.imputed.gz"
 
 DATASET="cardiogenics"  # filtered genotypes have gtex format

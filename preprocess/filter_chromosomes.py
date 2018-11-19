@@ -1,5 +1,6 @@
-from iotools.readOxford import ReadOxford
 import sys
+sys.path.append("../")
+from iotools.readOxford import ReadOxford
 import argparse
 
 def parse_args():
@@ -44,9 +45,9 @@ outfile  = opts.out # "/cbscratch/franco/datasets/cardiogenics/genotypes/prefilt
 fam_file = opts.fam # "/cbscratch/franco/datasets/cardiogenics/genotypes/CG.sample"
 
 if opts.dataset == "cardiogenics":
-    oxf = ReadOxford(oxf_file, fam_file, isdosage=False, data_columns=5, chrom=opts.chrom) #should be self.args.isdosage and self.args.oxf_columns
+    oxf = ReadOxford(oxf_file, fam_file, isdosage=False, chrom=opts.chrom) #should be self.args.isdosage and self.args.oxf_columns
 if opts.dataset == "gtex":
-    oxf = ReadOxford(oxf_file, fam_file, isdosage=True, data_columns=6, chrom=opts.chrom) #should be self.args.isdosage and self.args.oxf_columns
+    oxf = ReadOxford(oxf_file, fam_file, isdosage=True, chrom=opts.chrom) #should be self.args.isdosage and self.args.oxf_columns
 dosage = oxf.dosage
 gt_donor_ids = oxf.samplenames
 snpinfo = oxf.snpinfo

@@ -1,23 +1,28 @@
 #!/bin/bash
 
 TISSUEFILE="tissues.table.txt"
-ENV=/home/fsimone/myenv/bin
+ENV="$HOME/opt/miniconda/3/envs/env3.6/bin/python"
+
+BASEDIR="/cbscratch/franco/datasets/gtex"
 
 # REQUIRED FILES!! download them from GTEx (for pheno file you need access)
 RPKMFILE="GTEx_Analysis_v6p_RNA-seq_RNA-SeQCv1.1.8_gene_rpkm.gct.gz"
 PHENOFILE="phs000424.v6.pht002743.v6.p1.c1.GTEx_Sample_Attributes.GRU.txt"
 READSFILE="GTEx_Analysis_v6p_RNA-seq_RNA-SeQCv1.1.8_gene_reads.gct.gz"
-DONORFILE="../donor_ids.fam"
+DONORFILE="$BASEDIR/donor_ids.fam"
 
 
-RPKMOUTDIR="rpkms"              # tissue specific rpkms output dir
-EXPROUTDIR="normalized_expr"    # normalized, uncorrected expr dir
+RPKMOUTDIR="$BASEDIR/expression/rpkms"              # tissue specific rpkms output dir
+EXPROUTDIR="$BASEDIR/expression/normalized_expr"    # normalized, uncorrected expr dir
 
-GTEXCOVDIR="GTEx_Analysis_v6p_eQTL_covariates"  # dir for covariates downloaded from GTEx (public access)
-COVDIR="PEER_outputs"                        # PEER covariates outdir
+GTEXCOVDIR="$BASEDIR/expression/GTEx_Analysis_v6p_eQTL_covariates"  # dir for covariates downloaded from GTEx (public access)
+COVDIR="$BASEDIR/expression/PEER_outputs"                        # PEER covariates outdir
 RUNPEER=true
 MAXNCOV=35                     # max number of Nº of hidden confounders for PEER
 
-LMOUTDIR="norm_lmcorrected" # outdir of linear model corrected expressions (PC+platform+sex, no peer!)
+LMOUTDIR="$BASEDIR/expression/norm_lmcorrected" # outdir of linear model corrected expressions (PC+platform+sex, no peer!)
 
 # If you want to correct for PEER, use _residuals output directly from step 2 script.
+
+VCFDIR="$BASEDIR/genotypes/vcfs_split_allsamples"
+PLINK2="$HOME/bin/plink2"
