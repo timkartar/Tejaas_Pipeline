@@ -24,5 +24,5 @@ LMOUTDIR="$BASEDIR/expression/norm_lmcorrected" # outdir of linear model correct
 
 # If you want to correct for PEER, use _residuals output directly from step 2 script.
 
-VCFDIR="$BASEDIR/genotypes/vcfs_split_allsamples"
+VCFDIR="$BASEDIR/genotypes/vcfs_allsamples"
 PLINK2="$HOME/bin/plink2"
